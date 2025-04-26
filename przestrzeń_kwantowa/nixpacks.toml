@@ -1,0 +1,11 @@
+[builders]
+[[builders.rust]]
+version = "1.60.0"
+
+[[builders.postgres]]
+version = "14"
+
+[env]
+DATABASE_URL = { source = ".env.template", variable = "DATABASE_URL" }
+QUANTUM_DB_URI = { source = ".env.template", variable = "QUANTUM_DB_URI" }
+QDRANT_URL = { source = ".env.template", variable = "QDRANT_URL" }

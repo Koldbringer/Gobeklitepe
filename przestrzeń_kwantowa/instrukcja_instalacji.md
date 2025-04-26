@@ -52,6 +52,26 @@ psql -U hvac_admin -d hvac_crm_erp -f schemat_bazy_danych.sql
 
 ## Instalacja i konfiguracja Rust
 
+## Instalacja przy użyciu Nixpacks
+
+### 1. Instalacja Nixpacks
+
+```bash
+curl -sSL https://nixpacks.com/install.sh | bash
+```
+
+### 2. Budowa aplikacji
+
+```bash
+nixpacks build . -o ./dist
+```
+
+### 3. Uruchomienie kontenera
+
+```bash
+docker run -p 8080:8080 --env-file .env.template hvac-crm-erp-kwantowy
+```
+
 ### 1. Instalacja Rust
 
 ```bash
