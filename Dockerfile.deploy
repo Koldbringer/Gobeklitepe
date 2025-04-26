@@ -8,26 +8,23 @@ RUN apt-get update && apt-get install -y \
     curl \
     software-properties-common \
     git \
+    nginx \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements first for better caching
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy the rest of the application
+# Copy the application
 COPY . .
+
+# Make the deployment script executable
+RUN chmod +x deploy_simple.sh
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     PORT=8501
 
-# Expose the port Streamlit runs on
+# Expose the port
 EXPOSE 8501
+EXPOSE 80
 
-# Make entrypoint script executable
-COPY entrypoint.sh .
-RUN chmod +x entrypoint.sh
-
-# Command to run the application
-ENTRYPOINT ["./entrypoint.sh"]
+# Run the deployment script
+CMD ["./deploy_simple.sh"]
