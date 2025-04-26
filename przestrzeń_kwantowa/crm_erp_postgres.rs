@@ -192,6 +192,85 @@ impl MenedżerCRMERP {
         })
     }
 
+    // Metody dla budynków
+    pub async fn dodaj_budynek(&self, budynek: &Budynek) -> Result<i32, PgError> {
+        let query = "INSERT INTO budynki \
+            (id_klienta, nazwa, adres, współrzędne_geo, typ_budynku, powierzchnia, liczba_pięter, rok_budowy, notatki) \
+            VALUES ($1, $2, $3, POINT($4, $5), $6, $7, $8, $9, $10) \
+            RETURNING id"; // Assuming POINT constructor for coordinates
+
+        let (lon, lat) = budynek.współrzędne_geo.unwrap_or((0.0, 0.0)); // Default or handle None better
+
+        let klient_guard = self.klient_db.lock().map_err(|_| PgError::from_source(Box::new(std::io::Error::new(std::io::ErrorKind::Other, "Mutex lock failed"))))?;
+        let wiersz = klient_guard.query_one(
+            query,
+            &[
+                &budynek.id_klienta,
+                &budynek.nazwa,
+                &budynek.adres,
+                &lon, // Longitude for POINT
+                &lat, // Latitude for POINT
+                &budynek.typ_budynku,
+                &budynek.powierzchnia,
+                &budynek.liczba_pięter,
+                &budynek.rok_budowy,
+                &budynek.notatki,
+            ],
+        ).await?;
+
+        Ok(wiersz.get(0))
+    }
+
+    pub async fn pobierz_dane_mapy_instalacji(&self, id_klienta: Option<i32>, region: Option<String>) -> Result<Vec<Budynek>, PgError> {
+        let mut query = "SELECT id, id_klienta, nazwa, adres, współrzędne_geo[0] as lon, współrzędne_geo[1] as lat, typ_budynku, powierzchnia, liczba_pięter, rok_budowy, notatki FROM budynki WHERE 1=1".to_string(); // Assuming POINT can be accessed like an array
+        let mut params: Vec<&(dyn tokio_postgres::types::ToSql + Sync)> = Vec::new();
+        let mut param_index = 1;
+
+        let id_klienta_val;
+        if let Some(id) = id_klienta {
+            id_klienta_val = id;
+            query.push_str(&format!(" AND id_klienta = ${}", param_index));
+            params.push(&id_klienta_val);
+            param_index += 1;
+        }
+
+        let region_val;
+        if let Some(ref reg) = region {
+            region_val = format!("%{}%", reg);
+            query.push_str(&format!(" AND adres ILIKE ${}", param_index)); // Use ILIKE for case-insensitive matching
+            params.push(&region_val);
+            // param_index += 1; // No need if last param
+        }
+
+        let klient_guard = self.klient_db.lock().map_err(|_| PgError::from_source(Box::new(std::io::Error::new(std::io::ErrorKind::Other, "Mutex lock failed"))))?;
+        let wiersze = klient_guard.query(&query, &params[..]).await?;
+
+        let mut budynki = Vec::new();
+        for wiersz in wiersze {
+             let lon: Option<f64> = wiersz.get("lon");
+             let lat: Option<f64> = wiersz.get("lat");
+             let współrzędne = match (lon, lat) {
+                 (Some(lo), Some(la)) => Some((lo, la)),
+                 _ => None,
+             };
+
+            budynki.push(Budynek {
+                id: wiersz.get("id"),
+                id_klienta: wiersz.get("id_klienta"),
+                nazwa: wiersz.get("nazwa"),
+                adres: wiersz.get("adres"),
+                współrzędne_geo: współrzędne,
+                typ_budynku: wiersz.get("typ_budynku"),
+                powierzchnia: wiersz.get("powierzchnia"),
+                liczba_pięter: wiersz.get("liczba_pięter"),
+                rok_budowy: wiersz.get("rok_budowy"),
+                notatki: wiersz.get("notatki"),
+            });
+        }
+
+        Ok(budynki)
+    }
+
     // Metody dla urządzeń HVAC
     pub async fn dodaj_urządzenie(&self, urządzenie: &UrządzenieHVAC) -> Result<i32, PgError> {
         let query = "INSERT INTO urządzenia_hvac \
@@ -429,5 +508,27 @@ impl MenedżerCRMERP {
         let _id = self.zapisz_stan_splątany(&stan_splątany).await?;
         
         Ok(stopień_splątania)
+    }
+
+    pub async fn pobierz_dane_dashboardu(&self) -> Result<(i64, i64, f64, i64), PgError> {
+        let query_klienci = "SELECT COUNT(*) FROM klienci";
+        let query_urządzenia = "SELECT COUNT(*) FROM urządzenia_hvac";
+        let query_zlecenia = "SELECT COUNT(*) FROM zlecenia_serwisowe WHERE status = 'aktywne'";
+
+        let klient_guard = self.klient_db.lock().map_err(|_| PgError::from_source(Box::new(std::io::Error::new(std::io::ErrorKind::Other, "Mutex lock failed"))))?;
+
+        let wiersz_klienci = klient_guard.query_one(query_klienci, &[]).await?;
+        let liczba_klientów: i64 = wiersz_klienci.get(0);
+
+        let wiersz_urządzenia = klient_guard.query_one(query_urządzenia, &[]).await?;
+        let liczba_urządzeń: i64 = wiersz_urządzenia.get(0);
+
+        let wiersz_zlecenia = klient_guard.query_one(query_zlecenia, &[]).await?;
+        let liczba_zleceń: i64 = wiersz_zlecenia.get(0);
+
+        // Pobierz średnią stabilność połączenia kwantowego
+        let średnia_stabilność = self.menedżer_stanu_kwantowego.lock().unwrap().pobierz_średni_stan_entanglacji().await?;
+
+        Ok((liczba_klientów, liczba_urządzeń, średnia_stabilność, liczba_zleceń))
     }
 }

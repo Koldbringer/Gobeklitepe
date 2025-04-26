@@ -52,6 +52,7 @@ pub enum OdpowiedźInterfejsu {
         id_klienta: i32,
         ocena: f64,
     },
+    DaneMapyInstalacji(Vec<Budynek>),
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -169,12 +170,10 @@ impl InterfejsUżytkownika {
                     }
                 },
                 KomendaInterfejsu::WyświetlMapęInstalacji { id_klienta, region } => {
-                    match integrator.przetwórz_komunikat_crm(KomunikatCRM::ŻądanieMapyInstalacji {
-                        id_klienta,
-                        region,
-                    }).await {
-                        Ok(_) => OdpowiedźInterfejsu::Sukces("Wygenerowano mapę instalacji".to_string()),
-                        Err(e) => OdpowiedźInterfejsu::Błąd(format!("Błąd generowania mapy: {}", e)),
+                    let menedżer_crm_guard = menedżer_crm.lock().unwrap();
+                    match menedżer_crm_guard.pobierz_dane_mapy_instalacji(id_klienta, region).await {
+                        Ok(budynki) => OdpowiedźInterfejsu::DaneMapyInstalacji(budynki),
+                        Err(e) => OdpowiedźInterfejsu::Błąd(format!("Błąd pobierania danych mapy instalacji: {}", e)),
                     }
                 },
                 KomendaInterfejsu::MonitorujStanKwantowy(id_urządzenia) => {
@@ -192,8 +191,16 @@ impl InterfejsUżytkownika {
                     }
                 },
                 KomendaInterfejsu::WyświetlDashboard => {
-                    // Tutaj można zaimplementować logikę pobierania danych do dashboardu
-                    OdpowiedźInterfejsu::Sukces("Wyświetlono dashboard".to_string())
+                    let menedżer_crm_guard = menedżer_crm.lock().unwrap();
+                    match menedżer_crm_guard.pobierz_dane_dashboardu().await {
+                        Ok((liczba_klientów, liczba_urządzeń, średnia_stabilność, liczba_zleceń)) => {
+                            OdpowiedźInterfejsu::Sukces(format!(
+                                "Dashboard: Klienci: {}, Urządzenia: {}, Stabilność: {:.2}, Zlecenia: {}",
+                                liczba_klientów, liczba_urządzeń, średnia_stabilność, liczba_zleceń
+                            ))
+                        },
+                        Err(e) => OdpowiedźInterfejsu::Błąd(format!("Błąd pobierania danych dashboardu: {}", e)),
+                    }
                 },
                 KomendaInterfejsu::WyświetlHistorięSerwisową(id_urządzenia) => {
                     let menedżer_crm_guard = menedżer_crm.lock().unwrap();

@@ -1,11 +1,23 @@
 use std::sync::{Arc, Mutex};
 use glam::{Vec3, Mat4, Quat};
+use std::collections::HashMap; // Added import
+use crate::stan_kwantowy_postgres::StanKwantowyHVAC; // Added import
+use crate::transformacje3d::Transformacja3D; // Assuming this exists
+use crate::czastka::CząstkaKwantowa; // Assuming this exists
+use crate::mechanika_rdzenia::SplątanieKwantowe; // Assuming this exists
+
 
 pub struct InterfejsWizualizacji {
     shader_kwantowy: ShaderKwantowy,
     renderer: RendererKwantowy,
     efekty_cząstek: EfektyCząstek,
 }
+
+#[derive(Default)] // Added derive
+struct StanRenderowania {
+    // Placeholder fields if needed
+}
+
 
 struct ShaderKwantowy {
     program: u32,
@@ -63,6 +75,34 @@ impl InterfejsWizualizacji {
             }
         }
         self.efekty_cząstek.zastosuj_modyfikatory();
+    }
+
+    pub fn renderuj_stan_kwantowy(&mut self, stan: &StanKwantowyHVAC) {
+        println!("Wizualizacja stanu kwantowego dla urządzenia ID: {}", stan.id_urządzenia);
+
+        // 1. Aktualizacja shadera na podstawie stanu
+        // Użyj średniej entanglacji lub innej metryki
+        let avg_entanglement = if !stan.stan_entanglacji.is_empty() {
+            stan.stan_entanglacji.iter().sum::<f64>() / stan.stan_entanglacji.len() as f64
+        } else {
+            0.0
+        };
+        self.shader_kwantowy.ustaw_parametr("poziomSplątania", avg_entanglement as f32);
+        self.shader_kwantowy.ustaw_parametr("temperatura", stan.temperatura as f32);
+        self.shader_kwantowy.ustaw_parametr("ciśnienie", stan.ciśnienie as f32);
+        // Dodaj inne parametry wizualne na podstawie stanu
+
+        // 2. Generowanie/modyfikacja cząstek (konceptualne)
+        // Można by generować cząstki o kolorze/prędkości zależnej od temperatury/ciśnienia
+        // self.renderer.wyczyść_bufor(); // Może być potrzebne
+        // let nowe_cząstki = (self.efekty_cząstek.generator)(/* Jakaś pozycja bazowa */ Vec3::ZERO);
+        // self.renderer.bufor_cząstek.extend(nowe_cząstki);
+        // self.efekty_cząstek.zastosuj_modyfikatory(); // Modyfikuj istniejące/nowe cząstki
+
+        // 3. Renderowanie (konceptualne)
+        // self.renderer.renderuj(); // Wywołanie faktycznego renderowania
+
+        println!("Wizualizacja stanu zakończona (konceptualnie).");
     }
 }
 
