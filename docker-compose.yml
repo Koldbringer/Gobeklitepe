@@ -1,0 +1,35 @@
+version: '3'
+
+services:
+  streamlit:
+    build: .
+    container_name: hvac_crm_erp_app
+    restart: always
+    ports:
+      - "8501:8501"
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    networks:
+      - hvac_network
+
+  nginx:
+    image: nginx:alpine
+    container_name: hvac_crm_erp_nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx/ssl:/etc/nginx/ssl
+      - ./nginx/logs:/var/log/nginx
+    depends_on:
+      - streamlit
+    networks:
+      - hvac_network
+
+networks:
+  hvac_network:
+    driver: bridge
