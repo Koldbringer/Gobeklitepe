@@ -8,7 +8,7 @@ set -e
 
 # Configuration
 APP_NAME="hvac-crm-erp"
-DOMAIN="hvac-crm.example.com"  # Replace with your actual domain
+DOMAIN="savelal.example.com"  # Replace with your actual domain
 
 # Colors for output
 GREEN='\033[0;32m'
@@ -42,7 +42,7 @@ mkdir -p nginx/logs
 if [ ! -f nginx/ssl/cert.pem ] || [ ! -f nginx/ssl/key.pem ]; then
     echo -e "${YELLOW}SSL certificates not found. Creating self-signed certificates for development.${NC}"
     echo -e "${YELLOW}For production, replace these with real certificates from a certificate authority.${NC}"
-    
+
     # Generate self-signed SSL certificates for development
     openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
         -keyout nginx/ssl/key.pem \
