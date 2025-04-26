@@ -1,0 +1,29 @@
+{
+  "name": "hvac-crm-erp",
+  "version": "1.0.0",
+  "description": "HVAC CRM/ERP System",
+  "main": "app.py",
+  "scripts": {
+    "start": "streamlit run app.py --server.port=$PORT --server.address=0.0.0.0",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Koldbringer/Gobeklitepe.git"
+  },
+  "keywords": [
+    "hvac",
+    "crm",
+    "erp",
+    "streamlit"
+  ],
+  "author": "Koldbringer",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Koldbringer/Gobeklitepe/issues"
+  },
+  "homepage": "https://github.com/Koldbringer/Gobeklitepe#readme"
+}
