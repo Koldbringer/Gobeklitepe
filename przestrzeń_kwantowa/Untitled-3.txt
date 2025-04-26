@@ -1,0 +1,40 @@
+hvac_crm_erp/
+├── app.py                  # Main Streamlit application entry point
+├── requirements.txt        # Dependencies
+├── config.py               # Configuration (DB connections, API keys)
+├── assets/                 # Static assets (images, CSS)
+├── components/             # Reusable UI components
+│   ├── sidebar.py          # Navigation sidebar
+│   ├── dashboard.py        # Dashboard widgets
+│   ├── client_management.py # Client management components
+│   ├── device_management.py # Device management components
+│   ├── service_orders.py   # Service order components
+│   └── ...
+├── pages/                  # Individual pages
+│   ├── dashboard.py        # Dashboard page
+│   ├── clients.py          # Clients page
+│   ├── devices.py          # Devices page
+│   ├── buildings.py        # Buildings page
+│   ├── service_orders.py   # Service orders page
+│   ├── calendar.py         # Calendar page
+│   ├── offers_invoices.py  # Offers and invoices page
+│   ├── inventory.py        # Inventory page
+│   ├── reports.py          # Reports page
+│   ├── communication.py    # Communication page
+│   ├── visualizations.py   # Visualizations page
+│   ├── automation.py       # Automation page
+│   └── client_portal.py    # Client portal page
+├── utils/                  # Utility functions
+│   ├── db.py               # Database connection and queries
+│   ├── supabase_client.py  # Supabase client
+│   ├── qdrant_client.py    # Qdrant client for vector search
+│   ├── n8n_integration.py  # n8n integration
+│   ├── llm_processing.py   # Local LLM integration
+│   ├── ocr.py              # OCR functionality
+│   └── visualization.py    # Visualization utilities
+└── services/               # Business logic
+    ├── client_service.py   # Client-related business logic
+    ├── device_service.py   # Device-related business logic
+    ├── order_service.py    # Service order business logic
+    ├── communication_service.py # Communication business logic
+    └── ...
