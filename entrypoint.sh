@@ -83,12 +83,15 @@ echo "Generating networking configuration..."
 python networking_config.py
 
 # Generate the WebSocket test HTML file
-echo "Generating WebSocket test file..."
+# Always ensure correct ws/wss scheme
 if [ "$PUBLIC_PROTOCOL" = "https" ]; then
-  python consolidated_websocket_test.py --generate-html --url "wss://${PUBLIC_DOMAIN}/_stcore/stream"
+  WS_URL="wss://${PUBLIC_DOMAIN}/_stcore/stream"
 else
-  python consolidated_websocket_test.py --generate-html --url "ws://${PUBLIC_DOMAIN}/_stcore/stream"
+  WS_URL="ws://${PUBLIC_DOMAIN}/_stcore/stream"
 fi
+
+echo "Generating WebSocket test file..."
+python consolidated_websocket_test.py --generate-html --url "$WS_URL"
 
 # Create a simple health check file
 echo "Creating health check file..."

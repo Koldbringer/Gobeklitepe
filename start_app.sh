@@ -24,8 +24,14 @@ export STREAMLIT_SERVER_ENABLEXSRFPROTECTION=false
 export STREAMLIT_SERVER_ENABLEWEBSOCKETCOMPRESSION=false
 
 # Generate the WebSocket test HTML file
+if [ "$PORT" = "443" ]; then
+    WS_URL="wss://localhost/_stcore/stream"
+else
+    WS_URL="ws://localhost:$PORT/_stcore/stream"
+fi
+
 echo "Generating WebSocket test file..."
-python consolidated_websocket_test.py --generate-html --url "ws://localhost:$PORT/_stcore/stream"
+python consolidated_websocket_test.py --generate-html --url "$WS_URL"
 
 # Start the application
 echo "Starting Streamlit application on port $PORT..."
