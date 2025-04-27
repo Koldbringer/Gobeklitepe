@@ -230,14 +230,23 @@ async def main():
         parser.add_argument('--html-output', type=str, default='websocket_test.html',
                             help='Output file for HTML test page')
         args = parser.parse_args()
-        
+
+        # --- FIX: Ensure correct WebSocket URL scheme ---
+        # If the URL starts with https://, replace with wss://
+        # If it starts with http://, replace with ws://
+        if args.url.startswith('https://'):
+            args.url = 'wss://' + args.url[len('https://'):]
+        elif args.url.startswith('http://'):
+            args.url = 'ws://' + args.url[len('http://'):]
+        # --- END FIX ---
+
         # Generate HTML test page if requested
         if args.generate_html:
             generate_test_html(args.html_output, args.url)
-        
+
         # Test the WebSocket connection
         success = await test_websocket(args.url, args.timeout)
-        
+
         # Exit with appropriate status code
         if success:
             logger.info("WebSocket test successful")
