@@ -43,7 +43,11 @@ python networking_config.py
 
 :: Generate the WebSocket test HTML file
 echo Generating WebSocket test file...
-python consolidated_websocket_test.py --generate-html --url "%PUBLIC_PROTOCOL%s://%PUBLIC_DOMAIN%/_stcore/stream"
+if "%PUBLIC_PROTOCOL%"=="https" (
+    python consolidated_websocket_test.py --generate-html --url "wss://%PUBLIC_DOMAIN%/_stcore/stream"
+) else (
+    python consolidated_websocket_test.py --generate-html --url "ws://%PUBLIC_DOMAIN%/_stcore/stream"
+)
 
 :: Start the application
 echo Starting Streamlit application on port %PORT%...
