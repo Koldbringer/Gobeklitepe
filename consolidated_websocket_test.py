@@ -110,7 +110,7 @@ async def test_websocket(url, timeout=10):
         logger.error(f"Error connecting to WebSocket at {url}: {e}")
         return False
 
-def generate_test_html(output_file="websocket_test.html", default_url="ws://localhost:8080/_stcore/stream"):
+def generate_test_html(output_file="websocket_test.html", default_url="ws://localhost:8000/_stcore/stream"):
     """Generate an HTML file for testing WebSocket connections."""
     logger.info(f"Generating WebSocket test HTML file: {output_file}")
     
@@ -221,7 +221,7 @@ async def main():
     
     try:
         parser = argparse.ArgumentParser(description='Test WebSocket connections')
-        parser.add_argument('--url', type=str, default='ws://localhost:8080/_stcore/stream',
+        parser.add_argument('--url', type=str, default='ws://localhost:8000/_stcore/stream',
                             help='WebSocket URL to test')
         parser.add_argument('--timeout', type=int, default=10,
                             help='Timeout in seconds for WebSocket operations')

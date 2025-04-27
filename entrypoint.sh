@@ -1,8 +1,8 @@
 #!/bin/bash
 set -e
 
-# Set default port if not provided
-PORT=${PORT:-8080}
+# Set default port to 8000 for Streamlit
+PORT=${PORT:-8000}
 
 # Print environment information for debugging
 echo "Starting application with the following configuration:"
@@ -62,7 +62,7 @@ except Exception as e:
 fi
 
 # Set default values for networking configuration
-export PORT=${PORT:-8080}
+export PORT=${PORT:-8000}
 export PUBLIC_DOMAIN=${PUBLIC_DOMAIN:-"gobeklitepe-5hzle.kinsta.app"}
 export PUBLIC_PORT=${PUBLIC_PORT:-443}
 export PUBLIC_PROTOCOL=${PUBLIC_PROTOCOL:-"https"}
@@ -203,6 +203,5 @@ EOF
 echo "Starting health check server..."
 python simple_server.py &
 
-# Start the application
-echo "Starting Streamlit application on port $PORT..."
-exec streamlit run app.py
+# Start the main app (assume Streamlit)
+streamlit run app.py --server.port $PORT
