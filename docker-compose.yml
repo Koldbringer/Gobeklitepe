@@ -6,7 +6,7 @@ services:
     container_name: hvac_crm_erp_app
     restart: always
     ports:
-      - "8501:8501"
+      - "8501:8080"  # Map host 8501 to container 8080
     volumes:
       - .:/app
     env_file:
