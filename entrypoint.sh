@@ -68,6 +68,12 @@ export STREAMLIT_SERVER_HEADLESS=true
 export STREAMLIT_SERVER_ENABLE_CORS=true
 export STREAMLIT_SERVER_ENABLEXSRFPROTECTION=false
 export STREAMLIT_SERVER_ENABLEWEBSOCKETCOMPRESSION=false
+export STREAMLIT_BROWSER_SERVERADDRESS="gobeklitepe-5hzle.kinsta.app"
+export STREAMLIT_BROWSER_SERVERPORT=443
+
+# Copy the WebSocket test HTML file to the current directory
+echo "Copying WebSocket test file..."
+cp websocket_test.html .
 
 # Create a simple health check file
 echo "Creating health check file..."
@@ -96,8 +102,14 @@ cat > health.html << EOF
             <li>PORT: $PORT</li>
             <li>STREAMLIT_SERVER_PORT: $STREAMLIT_SERVER_PORT</li>
             <li>STREAMLIT_SERVER_ADDRESS: $STREAMLIT_SERVER_ADDRESS</li>
+            <li>STREAMLIT_BROWSER_SERVERADDRESS: $STREAMLIT_BROWSER_SERVERADDRESS</li>
+            <li>STREAMLIT_BROWSER_SERVERPORT: $STREAMLIT_BROWSER_SERVERPORT</li>
             <li>HOSTNAME: $(hostname)</li>
         </ul>
+    </div>
+    <div>
+        <h3>WebSocket Test:</h3>
+        <p>You can test WebSocket connections using the <a href="/websocket_test.html">WebSocket Test Page</a>.</p>
     </div>
     <script>
         // Simple WebSocket test
@@ -139,6 +151,39 @@ cat > health.html << EOF
 </body>
 </html>
 EOF
+
+# Create a simple server to serve the health check and WebSocket test files
+echo "Creating simple HTTP server..."
+cat > simple_server.py << EOF
+import http.server
+import socketserver
+import threading
+import time
+import os
+
+# Get the port from environment or use default
+PORT = int(os.environ.get('HEALTH_PORT', 8000))
+
+class SimpleHTTPRequestHandler(http.server.SimpleHTTPRequestHandler):
+    def log_message(self, format, *args):
+        # Suppress log messages
+        pass
+
+def run_server():
+    handler = SimpleHTTPRequestHandler
+    with socketserver.TCPServer(("", PORT), handler) as httpd:
+        print(f"Serving health check on port {PORT}")
+        httpd.serve_forever()
+
+# Start the server in a separate thread
+server_thread = threading.Thread(target=run_server, daemon=True)
+server_thread.start()
+print(f"Health check server started on port {PORT}")
+EOF
+
+# Start the health check server in the background
+echo "Starting health check server..."
+python simple_server.py &
 
 # Start the application
 echo "Starting Streamlit application on port $PORT..."

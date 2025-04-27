@@ -8,12 +8,14 @@ headless = true
 enableStaticServing = true
 port = 8080
 address = "0.0.0.0"
+baseUrlPath = ""
+allowWebsocketOrigin = "*"
+enableWebsocketConnectionReuse = true
 
 [browser]
 gatherUsageStats = false
-# Comment out serverAddress to let it be determined automatically
-# serverAddress = "gobeklitepe-5hzle.kinsta.app"
-# serverPort = 443
+serverAddress = "gobeklitepe-5hzle.kinsta.app"
+serverPort = 443
 
 [theme]
 primaryColor = "#1E88E5"
