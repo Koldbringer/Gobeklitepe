@@ -8,6 +8,7 @@ The HVAC CRM/ERP system supports various networking configurations, including:
 
 - HTTP/HTTPS access
 - WebSocket connections for real-time updates
+- gRPC services for efficient API access
 - CDN and edge caching
 - IP restrictions
 - Private networking
@@ -71,6 +72,16 @@ check_network.bat
 - `websocket_enabled`: Enable WebSocket support (default: true)
 - `websocket_compression`: Enable WebSocket compression (default: false)
 
+### gRPC Configuration
+
+- `grpc_enabled`: Enable gRPC support (default: true)
+- `grpc_address`: Address to bind the gRPC server (default: 0.0.0.0)
+- `grpc_port`: Port for the gRPC server (default: 8080)
+- `grpc_max_workers`: Maximum number of worker threads (default: 10)
+- `grpc_reflection_enabled`: Enable gRPC reflection (default: true)
+- `grpc_compression`: Enable gRPC compression (default: false)
+- `grpc_ssl_enabled`: Enable SSL for gRPC (default: false)
+
 ### Security Configuration
 
 - `enable_cors`: Enable CORS (default: true)
@@ -95,6 +106,13 @@ The following environment variables can be used to override configuration:
 - `PUBLIC_PORT`: Public port
 - `PUBLIC_PROTOCOL`: Public protocol (http or https)
 - `PRIVATE_HOSTNAME`: Private hostname for internal access
+- `GRPC_ENABLED`: Enable gRPC support
+- `GRPC_ADDRESS`: Address to bind the gRPC server
+- `GRPC_PORT`: Port for the gRPC server
+- `GRPC_MAX_WORKERS`: Maximum number of worker threads
+- `GRPC_REFLECTION_ENABLED`: Enable gRPC reflection
+- `GRPC_COMPRESSION`: Enable gRPC compression
+- `GRPC_SSL_ENABLED`: Enable SSL for gRPC
 
 ## Examples
 
@@ -108,6 +126,12 @@ update_networking.bat --http-port 8501 --public-domain localhost --public-port 8
 
 ```bash
 update_networking.bat --http-port 8080 --public-domain gobeklitepe-5hzle.kinsta.app --public-port 443 --public-protocol https
+```
+
+### Configuring gRPC
+
+```bash
+update_networking.bat --grpc-enabled true --grpc-address 0.0.0.0 --grpc-port 8080
 ```
 
 ### Adding IP Restrictions
@@ -127,21 +151,30 @@ update_networking.bat --clear-ip-restrictions
 If you encounter networking issues:
 
 1. Run the network health check:
+
    ```bash
    check_network.bat
    ```
 
 2. Check if the application is running:
+
    ```bash
    netstat -ano | findstr 8080
    ```
 
 3. Verify that the WebSocket connection is working:
+
    ```bash
    python consolidated_websocket_test.py
    ```
 
-4. Check the logs for any networking-related errors.
+4. Test the gRPC server:
+
+   ```bash
+   test_grpc_client.bat --action status
+   ```
+
+5. Check the logs for any networking-related errors.
 
 ## Advanced Configuration
 

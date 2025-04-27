@@ -1,0 +1,102 @@
+syntax = "proto3";
+
+package hvac;
+
+// Service definition for the HVAC CRM/ERP system
+service HvacService {
+  // Get system status
+  rpc GetStatus (StatusRequest) returns (StatusResponse) {}
+  
+  // Send email
+  rpc SendEmail (EmailRequest) returns (EmailResponse) {}
+  
+  // Get emails
+  rpc GetEmails (EmailsRequest) returns (EmailsResponse) {}
+  
+  // Health check
+  rpc HealthCheck (HealthCheckRequest) returns (HealthCheckResponse) {}
+}
+
+// Status request message
+message StatusRequest {
+  string client_id = 1;
+}
+
+// Status response message
+message StatusResponse {
+  string status = 1;
+  string version = 2;
+  string timestamp = 3;
+  repeated string features = 4;
+}
+
+// Email request message
+message EmailRequest {
+  string subject = 1;
+  string to_email = 2;
+  string from_email = 3;
+  string text_content = 4;
+  string html_content = 5;
+  repeated string cc_emails = 6;
+  repeated string bcc_emails = 7;
+  repeated Attachment attachments = 8;
+  string reply_to = 9;
+  int32 priority = 10;
+}
+
+// Email attachment
+message Attachment {
+  string filename = 1;
+  bytes content = 2;
+  string content_type = 3;
+}
+
+// Email response message
+message EmailResponse {
+  bool success = 1;
+  string message = 2;
+  string email_id = 3;
+}
+
+// Emails request message
+message EmailsRequest {
+  string folder = 1;
+  int32 limit = 2;
+  bool unread_only = 3;
+  string since_date = 4;
+}
+
+// Email message
+message Email {
+  string id = 1;
+  string subject = 2;
+  string from = 3;
+  string to = 4;
+  string date = 5;
+  string body_text = 6;
+  string body_html = 7;
+  repeated Attachment attachments = 8;
+}
+
+// Emails response message
+message EmailsResponse {
+  repeated Email emails = 1;
+  int32 total_count = 2;
+  string message = 3;
+}
+
+// Health check request message
+message HealthCheckRequest {
+  string service = 1;
+}
+
+// Health check response message
+message HealthCheckResponse {
+  enum ServingStatus {
+    UNKNOWN = 0;
+    SERVING = 1;
+    NOT_SERVING = 2;
+    SERVICE_UNKNOWN = 3;
+  }
+  ServingStatus status = 1;
+}

@@ -10,5 +10,12 @@
   "allowed_origins": ["*"],
   "ip_restrictions": [],
   "cdn_enabled": true,
-  "edge_caching_enabled": true
+  "edge_caching_enabled": true,
+  "grpc_enabled": true,
+  "grpc_address": "0.0.0.0",
+  "grpc_port": 8080,
+  "grpc_max_workers": 10,
+  "grpc_reflection_enabled": true,
+  "grpc_compression": false,
+  "grpc_ssl_enabled": false
 }
