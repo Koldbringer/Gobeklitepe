@@ -5,10 +5,12 @@
   "main": "app.py",
   "scripts": {
     "start": "streamlit run app.py --server.port=$PORT --server.address=0.0.0.0",
+    "build": "chmod +x build.sh && ./build.sh",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "engines": {
-    "node": ">=14.0.0"
+    "node": ">=14.0.0",
+    "python": "3.9"
   },
   "repository": {
     "type": "git",

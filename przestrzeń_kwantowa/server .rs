@@ -3,7 +3,7 @@ server {
     server_name your_domain.com;
 
     location / {
-        proxy_pass http://localhost:8080;  # Adjust to your application's port
+        proxy_pass http://0.0.0.0:8080;  # Adjust to your application's port
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
     }

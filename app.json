@@ -1,0 +1,17 @@
+{
+  "name": "hvac-crm-erp",
+  "description": "HVAC CRM/ERP System",
+  "repository": "https://github.com/Koldbringer/Gobeklitepe",
+  "keywords": ["python", "streamlit", "hvac", "crm", "erp"],
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ],
+  "env": {
+    "PYTHONPATH": {
+      "description": "Python path",
+      "value": "."
+    }
+  }
+}
