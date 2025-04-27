@@ -12,6 +12,36 @@
     "PYTHONPATH": {
       "description": "Python path",
       "value": "."
+    },
+    "PORT": {
+      "description": "Port for the web server",
+      "value": "8080"
+    },
+    "STREAMLIT_SERVER_PORT": {
+      "description": "Port for Streamlit",
+      "value": "8080"
+    },
+    "STREAMLIT_SERVER_ADDRESS": {
+      "description": "Address for Streamlit to bind to",
+      "value": "0.0.0.0"
+    },
+    "STREAMLIT_SERVER_HEADLESS": {
+      "description": "Run Streamlit in headless mode",
+      "value": "true"
+    },
+    "STREAMLIT_SERVER_ENABLE_CORS": {
+      "description": "Enable CORS for Streamlit",
+      "value": "true"
+    },
+    "SKIP_DB_CHECK": {
+      "description": "Skip database connection check",
+      "value": "true"
+    }
+  },
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "standard-1x"
     }
   }
 }

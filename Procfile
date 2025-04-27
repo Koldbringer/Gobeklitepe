@@ -1,1 +1,2 @@
-web: streamlit run app.py --server.port=$PORT --server.address=0.0.0.0
+web: ./entrypoint.sh
+health: python health_check.py
