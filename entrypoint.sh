@@ -2,7 +2,7 @@
 set -e
 
 # Set default port if not provided
-PORT=${PORT:-8501}
+PORT=${PORT:-8080}
 
 # Print environment information for debugging
 echo "Starting application with the following configuration:"
@@ -66,6 +66,79 @@ export STREAMLIT_SERVER_PORT=$PORT
 export STREAMLIT_SERVER_ADDRESS=0.0.0.0
 export STREAMLIT_SERVER_HEADLESS=true
 export STREAMLIT_SERVER_ENABLE_CORS=true
+export STREAMLIT_SERVER_ENABLEXSRFPROTECTION=false
+export STREAMLIT_SERVER_ENABLEWEBSOCKETCOMPRESSION=false
+
+# Create a simple health check file
+echo "Creating health check file..."
+cat > health.html << EOF
+<!DOCTYPE html>
+<html>
+<head>
+    <title>HVAC CRM/ERP Health Check</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .status { padding: 20px; border-radius: 5px; margin-bottom: 20px; }
+        .ok { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>HVAC CRM/ERP System Health Check</h1>
+    <div class="status ok">
+        <h2>Server Status: OK</h2>
+        <p>The server is running and responding to requests.</p>
+        <p>Timestamp: $(date)</p>
+    </div>
+    <div>
+        <h3>Environment Information:</h3>
+        <ul>
+            <li>PORT: $PORT</li>
+            <li>STREAMLIT_SERVER_PORT: $STREAMLIT_SERVER_PORT</li>
+            <li>STREAMLIT_SERVER_ADDRESS: $STREAMLIT_SERVER_ADDRESS</li>
+            <li>HOSTNAME: $(hostname)</li>
+        </ul>
+    </div>
+    <script>
+        // Simple WebSocket test
+        function testWebSocket() {
+            const wsUrl = window.location.protocol === 'https:'
+                ? 'wss://' + window.location.host + '/_stcore/stream'
+                : 'ws://' + window.location.host + '/_stcore/stream';
+
+            const statusDiv = document.createElement('div');
+            statusDiv.className = 'status';
+            statusDiv.innerHTML = '<h2>WebSocket Test</h2><p>Testing connection to: ' + wsUrl + '</p>';
+            document.body.appendChild(statusDiv);
+
+            try {
+                const ws = new WebSocket(wsUrl);
+
+                ws.onopen = function() {
+                    statusDiv.className = 'status ok';
+                    statusDiv.innerHTML += '<p>WebSocket connection successful!</p>';
+                };
+
+                ws.onerror = function(error) {
+                    statusDiv.className = 'status error';
+                    statusDiv.innerHTML += '<p>WebSocket connection failed.</p>';
+                };
+
+                ws.onclose = function() {
+                    statusDiv.innerHTML += '<p>WebSocket connection closed.</p>';
+                };
+            } catch (e) {
+                statusDiv.className = 'status error';
+                statusDiv.innerHTML += '<p>Error creating WebSocket: ' + e.message + '</p>';
+            }
+        }
+
+        // Run the test when the page loads
+        window.onload = testWebSocket;
+    </script>
+</body>
+</html>
+EOF
 
 # Start the application
 echo "Starting Streamlit application on port $PORT..."

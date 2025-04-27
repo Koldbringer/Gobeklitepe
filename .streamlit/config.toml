@@ -1,23 +1,26 @@
+[server]
+enableCORS = true
+enableXsrfProtection = false
+maxUploadSize = 200
+maxMessageSize = 200
+enableWebsocketCompression = false
+headless = true
+enableStaticServing = true
+port = 8080
+address = "0.0.0.0"
+
+[browser]
+gatherUsageStats = false
+# Comment out serverAddress to let it be determined automatically
+# serverAddress = "gobeklitepe-5hzle.kinsta.app"
+# serverPort = 443
+
 [theme]
 primaryColor = "#1E88E5"
 backgroundColor = "#F5F5F5"
 secondaryBackgroundColor = "#FFFFFF"
 textColor = "#212121"
 font = "sans serif"
-
-[server]
-enableCORS = true
-enableXsrfProtection = true
-maxUploadSize = 200
-maxMessageSize = 200
-enableWebsocketCompression = true
-headless = true
-enableStaticServing = true
-
-[browser]
-gatherUsageStats = false
-serverAddress = "0.0.0.0"
-serverPort = 8501
 
 [runner]
 magicEnabled = true

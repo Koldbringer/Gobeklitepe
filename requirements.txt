@@ -14,3 +14,4 @@ psycopg2-binary==2.9.9
 streamlit-extras==0.3.6
 streamlit-authenticator==0.2.3
 watchdog==4.0.0
+websockets==12.0
