@@ -1,4 +1,4 @@
-app = "savelal"
+app = "hvac-crm-erp"
 primary_region = "fra"
 
 [build]
@@ -6,22 +6,46 @@ primary_region = "fra"
 
 [env]
   PORT = "8501"
+  STREAMLIT_SERVER_ENABLE_STATIC_SERVING = "true"
+  STREAMLIT_BROWSER_GATHER_USAGE_STATS = "false"
+  STREAMLIT_SERVER_HEADLESS = "true"
+  STREAMLIT_SERVER_ADDRESS = "0.0.0.0"
+  PYTHONUNBUFFERED = "1"
+  PYTHONDONTWRITEBYTECODE = "1"
 
 [http_service]
   internal_port = 8501
   force_https = true
   auto_stop_machines = true
   auto_start_machines = true
-  min_machines_running = 0
+  min_machines_running = 1
   processes = ["app"]
+  concurrency = 100
 
-[[http_service.checks]]
-  grace_period = "10s"
-  interval = "30s"
-  method = "GET"
-  timeout = "5s"
-  path = "/"
+  [[http_service.checks]]
+    grace_period = "30s"
+    interval = "30s"
+    method = "GET"
+    timeout = "5s"
+    path = "/static/health.json"
+
+  [http_service.tls]
+    minimum_version = "TLS1.2"
+    certificate_authority = true
 
 [[statics]]
   guest_path = "/app/static"
   url_prefix = "/static"
+
+[metrics]
+  port = 9091
+  path = "/metrics"
+
+[deploy]
+  release_command = "python -c \"from utils.health_check import write_health_check_file; write_health_check_file()\""
+  strategy = "rolling"
+
+[[vm]]
+  memory = "1gb"
+  cpu_kind = "shared"
+  cpus = 1

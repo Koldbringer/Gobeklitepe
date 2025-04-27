@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y \
     curl \
     software-properties-common \
     git \
+    libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first for better caching
@@ -20,7 +21,11 @@ COPY . .
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    PORT=8501
+    PORT=8501 \
+    STREAMLIT_SERVER_ENABLE_STATIC_SERVING=true \
+    STREAMLIT_BROWSER_GATHER_USAGE_STATS=false \
+    STREAMLIT_SERVER_HEADLESS=true \
+    STREAMLIT_SERVER_ADDRESS=0.0.0.0
 
 # Expose the port Streamlit runs on
 EXPOSE 8501
@@ -28,6 +33,11 @@ EXPOSE 8501
 # Make entrypoint script executable
 COPY entrypoint.sh .
 RUN chmod +x entrypoint.sh
+
+# Create a non-root user to run the application
+RUN adduser --disabled-password --gecos "" appuser
+RUN chown -R appuser:appuser /app
+USER appuser
 
 # Command to run the application
 ENTRYPOINT ["./entrypoint.sh"]

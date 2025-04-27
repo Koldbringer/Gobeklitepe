@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oferta</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #1E88E5;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .content {
+            padding: 20px;
+            background-color: #f9f9f9;
+        }
+        .offer-details {
+            background-color: #e9f5ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 12px;
+            color: #666;
+        }
+        .button {
+            display: inline-block;
+            background-color: #1E88E5;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        .benefits {
+            margin: 20px 0;
+        }
+        .benefits ul {
+            padding-left: 20px;
+        }
+        .benefits li {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Oferta nr {{offer_number}}</h1>
+        </div>
+        <div class="content">
+            <p>Szanowny/a {{client_name}},</p>
+            
+            <p>Dziękujemy za zainteresowanie naszymi usługami. W załączniku przesyłamy szczegółową ofertę przygotowaną specjalnie dla Państwa.</p>
+            
+            <div class="offer-details">
+                <p><strong>Numer oferty:</strong> {{offer_number}}</p>
+                <p><strong>Data wystawienia:</strong> {{offer_date}}</p>
+                <p><strong>Ważna do:</strong> {{offer_expiry_date}}</p>
+            </div>
+            
+            <p>Pełną ofertę znajdziesz w załączniku do tej wiadomości w formacie PDF.</p>
+            
+            <div class="benefits">
+                <h3>Dlaczego warto wybrać nasze rozwiązania?</h3>
+                <ul>
+                    <li><strong>Energooszczędność</strong> - nasze systemy HVAC są zaprojektowane z myślą o maksymalnej efektywności energetycznej</li>
+                    <li><strong>Niezawodność</strong> - używamy tylko komponentów najwyższej jakości od sprawdzonych producentów</li>
+                    <li><strong>Profesjonalny montaż</strong> - nasi technicy posiadają wieloletnie doświadczenie i certyfikaty</li>
+                    <li><strong>Kompleksowa obsługa</strong> - od projektu, przez montaż, po serwis i konserwację</li>
+                    <li><strong>Gwarancja i wsparcie</strong> - zapewniamy długoterminową gwarancję i szybką reakcję serwisową</li>
+                </ul>
+            </div>
+            
+            <p>Jeśli masz jakiekolwiek pytania dotyczące oferty lub chciałbyś omówić szczegóły, skontaktuj się z nami:</p>
+            <p>
+                📞 Telefon: +48 123 456 789<br>
+                📧 Email: oferty@hvacsolutions.com
+            </p>
+            
+            <a href="https://www.hvacsolutions.com/akceptuj-oferte/{{offer_number}}" class="button">Akceptuj ofertę</a>
+        </div>
+        <div class="footer">
+            <p>© {{current_year}} HVAC Solutions. Wszelkie prawa zastrzeżone.</p>
+            <p>ul. Kwantowa 123, 00-001 Warszawa | NIP: 123-456-78-90</p>
+        </div>
+    </div>
+</body>
+</html>
