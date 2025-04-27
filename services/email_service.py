@@ -16,7 +16,6 @@ import os
 import smtplib
 import imaplib
 import poplib
-import poplib
 import email
 import logging
 import time
@@ -191,7 +190,7 @@ class EmailSender:
                 attachments=attachments,
                 reply_to=reply_to
             )
-            
+
             # Connect to the SMTP server
             if EMAIL_USE_SSL:
                 smtp = smtplib.SMTP_SSL(EMAIL_HOST, EMAIL_PORT)
@@ -199,38 +198,38 @@ class EmailSender:
                 smtp = smtplib.SMTP(EMAIL_HOST, EMAIL_PORT)
                 if EMAIL_USE_TLS:
                     smtp.starttls()
-            
+
             # Login to the SMTP server
             smtp.login(EMAIL_HOST_USER, EMAIL_HOST_PASSWORD)
-            
+
             # Send the email
             recipients = []
             if isinstance(to_emails, str):
                 recipients.append(to_emails)
             else:
                 recipients.extend(to_emails)
-            
+
             if cc_emails:
                 if isinstance(cc_emails, str):
                     recipients.append(cc_emails)
                 else:
                     recipients.extend(cc_emails)
-            
+
             if bcc_emails:
                 if isinstance(bcc_emails, str):
                     recipients.append(bcc_emails)
                 else:
                     recipients.extend(bcc_emails)
-            
+
             smtp.send_message(msg)
             smtp.quit()
-            
+
             logger.info(f"Email sent successfully to {', '.join(recipients)}")
             return True
-        
+
         except Exception as e:
             logger.error(f"Failed to send email: {str(e)}")
-            
+
             # Add to retry queue
             email_data = {
                 "subject": subject,
@@ -247,9 +246,9 @@ class EmailSender:
                 "next_retry": datetime.now() + timedelta(seconds=RETRY_DELAY)
             }
             email_queue.put(email_data)
-            
+
             return False
-    
+
     @staticmethod
     def send_template_email(
         template_name: str,
@@ -265,11 +264,11 @@ class EmailSender:
     ) -> bool:
         """Send an email using a template."""
         html_content = EmailTemplate.render_template(template_name, context)
-        
+
         # Generate plain text from HTML (simple version)
         text_content = re.sub(r'<.*?>', '', html_content)
         text_content = re.sub(r'\s+', ' ', text_content).strip()
-        
+
         return EmailSender.send_email(
             subject=subject,
             to_emails=to_emails,
@@ -286,14 +285,125 @@ class EmailSender:
 
 class EmailReceiver:
     """Class for receiving emails."""
-    
+
     @staticmethod
     def connect_to_imap() -> imaplib.IMAP4_SSL:
         """Connect to the IMAP server."""
         mail = imaplib.IMAP4_SSL(EMAIL_IMAP_SERVER, EMAIL_IMAP_PORT)
         mail.login(EMAIL_HOST_USER, EMAIL_HOST_PASSWORD)
         return mail
-    
+
+    @staticmethod
+    def connect_to_pop3() -> poplib.POP3_SSL:
+        """Connect to the POP3 server."""
+        if EMAIL_POP3_USE_SSL:
+            mail = poplib.POP3_SSL(EMAIL_POP3_SERVER, EMAIL_POP3_PORT)
+        else:
+            mail = poplib.POP3(EMAIL_POP3_SERVER, EMAIL_POP3_PORT)
+        mail.user(EMAIL_HOST_USER)
+        mail.pass_(EMAIL_HOST_PASSWORD)
+        return mail
+
+    @staticmethod
+    def get_emails_imap(
+        folder: str = "INBOX",
+        limit: int = 10,
+        unread_only: bool = True,
+        since_date: datetime = None
+    ) -> List[Dict[str, Any]]:
+        """Get emails from the specified folder using IMAP."""
+        try:
+            mail = EmailReceiver.connect_to_imap()
+            mail.select(folder)
+
+            search_criteria = []
+            if unread_only:
+                search_criteria.append("UNSEEN")
+
+            if since_date:
+                date_str = since_date.strftime("%d-%b-%Y")
+                search_criteria.append(f'SINCE "{date_str}"')
+
+            search_query = " ".join(search_criteria) if search_criteria else "ALL"
+            status, data = mail.search(None, search_query)
+
+            if status != "OK":
+                logger.error(f"Failed to search emails: {status}")
+                return []
+
+            email_ids = data[0].split()
+            if limit > 0:
+                email_ids = email_ids[-limit:]
+
+            emails = []
+            for email_id in email_ids:
+                status, data = mail.fetch(email_id, "(RFC822)")
+                if status != "OK":
+                    logger.error(f"Failed to fetch email {email_id}: {status}")
+                    continue
+
+                raw_email = data[0][1]
+                email_message = email.message_from_bytes(raw_email)
+
+                # Parse email
+                parsed_email = EmailReceiver.parse_email(email_message)
+                parsed_email["id"] = email_id.decode("utf-8")
+                emails.append(parsed_email)
+
+            mail.close()
+            mail.logout()
+
+            return emails
+
+        except Exception as e:
+            logger.error(f"Error getting emails via IMAP: {str(e)}")
+            return []
+
+    @staticmethod
+    def get_emails_pop3(
+        limit: int = 10
+    ) -> List[Dict[str, Any]]:
+        """Get emails using POP3."""
+        try:
+            mail = EmailReceiver.connect_to_pop3()
+
+            # Get number of emails
+            num_emails = len(mail.list()[1])
+            if num_emails == 0:
+                logger.info("No emails in POP3 mailbox")
+                mail.quit()
+                return []
+
+            # Limit the number of emails to retrieve
+            start_index = max(1, num_emails - limit + 1)
+            end_index = num_emails + 1
+
+            emails = []
+            for i in range(start_index, end_index):
+                try:
+                    # Get email by index
+                    response, lines, octets = mail.retr(i)
+
+                    # Join lines and parse email
+                    raw_email = b'\r\n'.join(lines)
+                    email_message = email.message_from_bytes(raw_email)
+
+                    # Parse email
+                    parsed_email = EmailReceiver.parse_email(email_message)
+                    parsed_email["id"] = str(i)  # Use POP3 message number as ID
+                    emails.append(parsed_email)
+
+                except Exception as e:
+                    logger.error(f"Error retrieving email {i} via POP3: {str(e)}")
+                    continue
+
+            mail.quit()
+            return emails
+
+        except Exception as e:
+            logger.error(f"Error getting emails via POP3: {str(e)}")
+            return []
+
     @staticmethod
     def get_emails(
         folder: str = "INBOX",
@@ -301,54 +411,21 @@ class EmailReceiver:
         unread_only: bool = True,
         since_date: datetime = None
     ) -> List[Dict[str, Any]]:
-        """Get emails from the specified folder."""
-        try:
-            mail = EmailReceiver.connect_to_imap()
-            mail.select(folder)
-            
-            search_criteria = []
-            if unread_only:
-                search_criteria.append("UNSEEN")
-            
-            if since_date:
-                date_str = since_date.strftime("%d-%b-%Y")
-                search_criteria.append(f'SINCE "{date_str}"')
-            
-            search_query = " ".join(search_criteria) if search_criteria else "ALL"
-            status, data = mail.search(None, search_query)
-            
-            if status != "OK":
-                logger.error(f"Failed to search emails: {status}")
-                return []
-            
-            email_ids = data[0].split()
-            if limit > 0:
-                email_ids = email_ids[-limit:]
-            
-            emails = []
-            for email_id in email_ids:
-                status, data = mail.fetch(email_id, "(RFC822)")
-                if status != "OK":
-                    logger.error(f"Failed to fetch email {email_id}: {status}")
-                    continue
-                
-                raw_email = data[0][1]
-                email_message = email.message_from_bytes(raw_email)
-                
-                # Parse email
-                parsed_email = EmailReceiver.parse_email(email_message)
-                parsed_email["id"] = email_id.decode("utf-8")
-                emails.append(parsed_email)
-            
-            mail.close()
-            mail.logout()
-            
-            return emails
-        
-        except Exception as e:
-            logger.error(f"Error getting emails: {str(e)}")
-            return []
-    
+        """Get emails using the configured retrieval method (IMAP or POP3)."""
+        if EMAIL_RETRIEVAL_METHOD == "POP3":
+            # POP3 doesn't support folders, unread filtering, or date filtering
+            logger.info("Using POP3 for email retrieval")
+            return EmailReceiver.get_emails_pop3(limit=limit)
+        else:
+            # Default to IMAP
+            logger.info("Using IMAP for email retrieval")
+            return EmailReceiver.get_emails_imap(
+                folder=folder,
+                limit=limit,
+                unread_only=unread_only,
+                since_date=since_date
+            )
+
     @staticmethod
     def parse_email(email_message: email.message.Message) -> Dict[str, Any]:
         """Parse an email message."""
@@ -361,17 +438,17 @@ class EmailReceiver:
             "body_html": "",
             "attachments": []
         }
-        
+
         # Process email body and attachments
         if email_message.is_multipart():
             for part in email_message.walk():
                 content_type = part.get_content_type()
                 content_disposition = str(part.get("Content-Disposition"))
-                
+
                 # Skip multipart containers
                 if content_type == "multipart/alternative" or content_type == "multipart/mixed":
                     continue
-                
+
                 # Handle attachments
                 if "attachment" in content_disposition:
                     filename = part.get_filename()
@@ -395,52 +472,65 @@ class EmailReceiver:
                 parsed_email["body_text"] = email_message.get_payload(decode=True).decode()
             elif content_type == "text/html":
                 parsed_email["body_html"] = email_message.get_payload(decode=True).decode()
-        
+
         return parsed_email
-    
+
     @staticmethod
     def mark_as_read(email_id: str, folder: str = "INBOX") -> bool:
         """Mark an email as read."""
+        # For POP3, we don't need to mark emails as read since they're automatically
+        # marked as read when retrieved, unless the server supports UIDL
+        if EMAIL_RETRIEVAL_METHOD == "POP3":
+            logger.info(f"POP3 emails are automatically marked as read when retrieved")
+            return True
+
+        # For IMAP
         try:
             mail = EmailReceiver.connect_to_imap()
             mail.select(folder)
-            
+
             mail.store(email_id.encode(), "+FLAGS", "\\Seen")
-            
+
             mail.close()
             mail.logout()
-            
+
             logger.info(f"Email {email_id} marked as read")
             return True
-        
+
         except Exception as e:
             logger.error(f"Error marking email as read: {str(e)}")
             return False
-    
+
     @staticmethod
     def move_email(email_id: str, destination_folder: str, source_folder: str = "INBOX") -> bool:
         """Move an email to another folder."""
+        # POP3 doesn't support folders or moving emails
+        if EMAIL_RETRIEVAL_METHOD == "POP3":
+            logger.warning(f"POP3 doesn't support moving emails between folders")
+            return False
+
+        # For IMAP
         try:
             mail = EmailReceiver.connect_to_imap()
             mail.select(source_folder)
-            
+
             # Copy the email to the destination folder
-            result, data = mail.copy(email_id.encode(), destination_folder)
+            result, _ = mail.copy(email_id.encode(), destination_folder)
             if result == "OK":
                 # Mark the original email for deletion
                 mail.store(email_id.encode(), "+FLAGS", "\\Deleted")
                 mail.expunge()
-                
+
                 logger.info(f"Email {email_id} moved to {destination_folder}")
                 return True
             else:
                 logger.error(f"Failed to copy email {email_id} to {destination_folder}: {result}")
                 return False
-        
+
         except Exception as e:
             logger.error(f"Error moving email: {str(e)}")
             return False
-        
+
         finally:
             mail.close()
             mail.logout()
@@ -454,20 +544,20 @@ def process_email_queue():
             if email_queue.empty():
                 time.sleep(60)  # Sleep for 1 minute if queue is empty
                 continue
-            
+
             # Get the next email from the queue
             email_data = email_queue.get()
-            
+
             # Check if it's time to retry
             if email_data["next_retry"] > datetime.now():
                 # Put it back in the queue and sleep
                 email_queue.put(email_data)
                 time.sleep(10)
                 continue
-            
+
             # Retry sending the email
             logger.info(f"Retrying email to {email_data['to_emails']}, attempt {email_data['retries'] + 1}")
-            
+
             try:
                 # Create the email message
                 msg = EmailSender.create_message(
@@ -481,7 +571,7 @@ def process_email_queue():
                     attachments=email_data["attachments"],
                     reply_to=email_data["reply_to"]
                 )
-                
+
                 # Connect to the SMTP server
                 if EMAIL_USE_SSL:
                     smtp = smtplib.SMTP_SSL(EMAIL_HOST, EMAIL_PORT)
@@ -489,40 +579,40 @@ def process_email_queue():
                     smtp = smtplib.SMTP(EMAIL_HOST, EMAIL_PORT)
                     if EMAIL_USE_TLS:
                         smtp.starttls()
-                
+
                 # Login to the SMTP server
                 smtp.login(EMAIL_HOST_USER, EMAIL_HOST_PASSWORD)
-                
+
                 # Send the email
                 recipients = []
                 if isinstance(email_data["to_emails"], str):
                     recipients.append(email_data["to_emails"])
                 else:
                     recipients.extend(email_data["to_emails"])
-                
+
                 if email_data["cc_emails"]:
                     if isinstance(email_data["cc_emails"], str):
                         recipients.append(email_data["cc_emails"])
                     else:
                         recipients.extend(email_data["cc_emails"])
-                
+
                 if email_data["bcc_emails"]:
                     if isinstance(email_data["bcc_emails"], str):
                         recipients.append(email_data["bcc_emails"])
                     else:
                         recipients.extend(email_data["bcc_emails"])
-                
+
                 smtp.send_message(msg)
                 smtp.quit()
-                
+
                 logger.info(f"Email retry successful to {', '.join(recipients)}")
-            
+
             except Exception as e:
                 logger.error(f"Email retry failed: {str(e)}")
-                
+
                 # Increment retry count
                 email_data["retries"] += 1
-                
+
                 # If we haven't reached the maximum number of retries, put it back in the queue
                 if email_data["retries"] < MAX_RETRIES:
                     # Exponential backoff for retries
@@ -531,7 +621,7 @@ def process_email_queue():
                     email_queue.put(email_data)
                 else:
                     logger.error(f"Maximum retries reached for email to {email_data['to_emails']}")
-        
+
         except Exception as e:
             logger.error(f"Error in email queue processor: {str(e)}")
             time.sleep(60)  # Sleep for 1 minute on error
@@ -552,7 +642,7 @@ def send_welcome_email(client_name: str, client_email: str) -> bool:
         "client_name": client_name,
         "current_year": datetime.now().year
     }
-    
+
     return EmailSender.send_template_email(
         template_name="welcome",
         context=context,
@@ -576,7 +666,7 @@ def send_service_confirmation(
         "technician_name": technician_name,
         "current_year": datetime.now().year
     }
-    
+
     return EmailSender.send_template_email(
         template_name="service_confirmation",
         context=context,
@@ -601,13 +691,13 @@ def send_invoice(
         "invoice_amount": invoice_amount,
         "current_year": datetime.now().year
     }
-    
+
     attachments = [{
         "filename": f"Faktura_{invoice_number}.pdf",
         "content": invoice_pdf,
         "content_type": "application/pdf"
     }]
-    
+
     return EmailSender.send_template_email(
         template_name="invoice",
         context=context,
@@ -633,13 +723,13 @@ def send_offer(
         "offer_expiry_date": offer_expiry_date,
         "current_year": datetime.now().year
     }
-    
+
     attachments = [{
         "filename": f"Oferta_{offer_number}.pdf",
         "content": offer_pdf,
         "content_type": "application/pdf"
     }]
-    
+
     return EmailSender.send_template_email(
         template_name="offer",
         context=context,
@@ -653,11 +743,11 @@ def process_incoming_emails(limit: int = 10) -> List[Dict[str, Any]]:
     """Process incoming emails and return parsed data."""
     emails = EmailReceiver.get_emails(limit=limit, unread_only=True)
     processed_emails = []
-    
+
     for email_data in emails:
         # Mark as read
         EmailReceiver.mark_as_read(email_data["id"])
-        
+
         # Process the email (e.g., categorize, extract information)
         processed_email = {
             "id": email_data["id"],
@@ -668,9 +758,9 @@ def process_incoming_emails(limit: int = 10) -> List[Dict[str, Any]]:
             "has_attachments": len(email_data["attachments"]) > 0,
             "processed_date": datetime.now().isoformat()
         }
-        
+
         processed_emails.append(processed_email)
-    
+
     return processed_emails
 
 
@@ -679,15 +769,25 @@ def init():
     """Initialize the email service module."""
     # Create templates directory if it doesn't exist
     os.makedirs(TEMPLATE_DIR, exist_ok=True)
-    
+
     # Start the email queue processor
     start_email_queue_processor()
-    
+
     # Check if email configuration is valid
     if not EMAIL_HOST or not EMAIL_HOST_USER or not EMAIL_HOST_PASSWORD:
         logger.warning("Email configuration is incomplete. Email functionality will be limited.")
-    
-    logger.info("Email service initialized")
+
+    # Check email retrieval configuration
+    if EMAIL_RETRIEVAL_METHOD == "IMAP":
+        if not EMAIL_IMAP_SERVER:
+            logger.warning("IMAP server not configured. Email retrieval will be limited.")
+    elif EMAIL_RETRIEVAL_METHOD == "POP3":
+        if not EMAIL_POP3_SERVER:
+            logger.warning("POP3 server not configured. Email retrieval will be limited.")
+    else:
+        logger.warning(f"Unknown email retrieval method: {EMAIL_RETRIEVAL_METHOD}. Using IMAP as fallback.")
+
+    logger.info(f"Email service initialized using {EMAIL_RETRIEVAL_METHOD} for retrieval")
 
 
 # Initialize the module when imported

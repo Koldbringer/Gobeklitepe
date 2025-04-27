@@ -61,6 +61,13 @@ except Exception as e:
 "
 fi
 
+# Set default values for networking configuration
+export PORT=${PORT:-8080}
+export PUBLIC_DOMAIN=${PUBLIC_DOMAIN:-"gobeklitepe-5hzle.kinsta.app"}
+export PUBLIC_PORT=${PUBLIC_PORT:-443}
+export PUBLIC_PROTOCOL=${PUBLIC_PROTOCOL:-"https"}
+export PRIVATE_HOSTNAME=${PRIVATE_HOSTNAME:-"gobeklitepe-5hzle-web.gobeklitepe-5hzle.svc.cluster.local"}
+
 # Make sure the port is properly set for Streamlit
 export STREAMLIT_SERVER_PORT=$PORT
 export STREAMLIT_SERVER_ADDRESS=0.0.0.0
@@ -68,12 +75,16 @@ export STREAMLIT_SERVER_HEADLESS=true
 export STREAMLIT_SERVER_ENABLE_CORS=true
 export STREAMLIT_SERVER_ENABLEXSRFPROTECTION=false
 export STREAMLIT_SERVER_ENABLEWEBSOCKETCOMPRESSION=false
-export STREAMLIT_BROWSER_SERVERADDRESS="gobeklitepe-5hzle.kinsta.app"
-export STREAMLIT_BROWSER_SERVERPORT=443
+export STREAMLIT_BROWSER_SERVERADDRESS="$PUBLIC_DOMAIN"
+export STREAMLIT_BROWSER_SERVERPORT=$PUBLIC_PORT
 
-# Copy the WebSocket test HTML file to the current directory
-echo "Copying WebSocket test file..."
-cp websocket_test.html .
+# Generate networking configuration
+echo "Generating networking configuration..."
+python networking_config.py
+
+# Generate the WebSocket test HTML file
+echo "Generating WebSocket test file..."
+python consolidated_websocket_test.py --generate-html --url "${PUBLIC_PROTOCOL}s://${PUBLIC_DOMAIN}/_stcore/stream"
 
 # Create a simple health check file
 echo "Creating health check file..."

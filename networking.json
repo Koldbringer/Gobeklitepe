@@ -1,0 +1,14 @@
+{
+  "http_port": 8080,
+  "websocket_enabled": true,
+  "websocket_compression": false,
+  "public_domain": "gobeklitepe-5hzle.kinsta.app",
+  "public_port": 443,
+  "public_protocol": "https",
+  "private_hostname": "gobeklitepe-5hzle-web.gobeklitepe-5hzle.svc.cluster.local",
+  "enable_cors": true,
+  "allowed_origins": ["*"],
+  "ip_restrictions": [],
+  "cdn_enabled": true,
+  "edge_caching_enabled": true
+}
