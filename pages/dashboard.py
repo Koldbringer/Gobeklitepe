@@ -180,7 +180,7 @@ def render():
         
         with col2:
             st.write("**Qdrant:** Połączono")
-            st.write("**n8n:** Połączono")
+            # st.write("**n8n:** Połączono")
         
         with col3:
             st.write("**Local LLM:** Aktywny")

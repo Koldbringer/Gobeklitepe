@@ -4,8 +4,8 @@ import logging
 import psycopg2
 from datetime import datetime
 from config import DB_HOST, DB_NAME, DB_USER, DB_PASSWORD, DB_PORT
-from config import SUPABASE_URL, QDRANT_URL, N8N_URL
-from config import ENABLE_OCR, ENABLE_LLM, ENABLE_QDRANT, ENABLE_N8N
+from config import SUPABASE_URL, QDRANT_URL
+from config import ENABLE_OCR, ENABLE_LLM, ENABLE_QDRANT
 
 logger = logging.getLogger(__name__)
 
@@ -51,19 +51,6 @@ def check_qdrant_connection():
         logger.error(f"Qdrant connection error: {e}")
         return False
 
-def check_n8n_connection():
-    """Check if n8n connection is working."""
-    if not ENABLE_N8N or not N8N_URL:
-        return False
-    
-    try:
-        # This is a placeholder - in a real app, you'd make an actual API call
-        # to n8n to verify the connection
-        return True
-    except Exception as e:
-        logger.error(f"n8n connection error: {e}")
-        return False
-
 def get_system_health():
     """Get the health status of all system components."""
     health = {
@@ -81,10 +68,6 @@ def get_system_health():
             "qdrant": {
                 "status": "online" if check_qdrant_connection() else "offline",
                 "enabled": ENABLE_QDRANT
-            },
-            "n8n": {
-                "status": "online" if check_n8n_connection() else "offline",
-                "enabled": ENABLE_N8N
             },
             "ocr": {
                 "status": "online",  # Placeholder
@@ -105,9 +88,6 @@ def get_system_health():
     
     if ENABLE_QDRANT:
         component_statuses.append(health["components"]["qdrant"]["status"])
-    
-    if ENABLE_N8N:
-        component_statuses.append(health["components"]["n8n"]["status"])
     
     if "offline" in component_statuses:
         health["status"] = "degraded"

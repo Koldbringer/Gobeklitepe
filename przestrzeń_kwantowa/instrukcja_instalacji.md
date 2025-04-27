@@ -6,7 +6,6 @@
 - PostgreSQL 14.0 lub nowszy z rozszerzeniem PostGIS
 - Rust 1.60.0 lub nowszy
 - Tokio (asynchroniczny runtime dla Rust)
-- n8n dla automatyzacji przepływów pracy
 - Qdrant dla wektorowej bazy danych
 - Minimum 8GB RAM, zalecane 16GB
 - Przestrzeń dyskowa: minimum 20GB
@@ -131,31 +130,9 @@ Utwórz plik `config_kwantowy.json` w katalogu głównym projektu:
   "qdrant": {
     "url": "http://localhost:6333",
     "collection_name": "hvac_wektory"
-  },
-  "n8n": {
-    "webhook_url": "http://localhost:5678/webhook/",
-    "api_key": "twój_klucz_api"
   }
 }
 ```
-
-## Instalacja i konfiguracja n8n
-
-### 1. Instalacja n8n
-
-```bash
-npm install n8n -g
-```
-
-### 2. Uruchomienie n8n
-
-```bash
-n8n start
-```
-
-### 3. Konfiguracja przepływów pracy
-
-Po uruchomieniu n8n, przejdź do interfejsu webowego (domyślnie http://localhost:5678) i zaimportuj przygotowane przepływy pracy z pliku `przeplywy_n8n.json`.
 
 ## Instalacja i konfiguracja Qdrant
 

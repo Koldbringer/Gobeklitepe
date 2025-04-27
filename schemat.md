@@ -28,7 +28,6 @@ hvac_crm_erp/              # Root directory
 │   ├── db.py               # Database connection and queries
 │   ├── supabase_client.py  # Supabase client
 │   ├── qdrant_client.py    # Qdrant client for vector search
-│   ├── n8n_integration.py  # n8n integration
 │   ├── llm_processing.py   # Local LLM integration
 │   ├── ocr.py              # OCR functionality
 │   └── visualization.py    # Visualization utilities
@@ -82,7 +81,6 @@ Offer tracking and analytics
 E-signature integration
 Client reaction tracking
 Automation
-n8n workflow configuration
 Automation rules setup
 Trigger management
 Workflow monitoring
@@ -108,7 +106,6 @@ Implement document management with OCR
 Phase 3: Integrations and Automation
 Integrate with Qdrant for vector search
 Set up Local LLM for text processing
-Implement n8n workflow integration
 Add visualization features for installations
 Implement client wealth analysis
 Phase 4: Polish and Optimization

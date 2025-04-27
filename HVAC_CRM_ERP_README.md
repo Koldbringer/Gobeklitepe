@@ -10,7 +10,7 @@ Kompleksowy system CRM/ERP dla firm HVAC (ogrzewanie, wentylacja, klimatyzacja) 
 - **Komunikacja**: Automatyczne przetwarzanie e-maili i transkrypcji rozmów telefonicznych
 - **Oferty i faktury**: Generowanie ofert, śledzenie reakcji klientów, e-podpisy
 - **Wizualizacje**: Wizualizacje instalacji klimatyzacji na zdjęciach
-- **Automatyzacja**: Integracja z n8n dla automatyzacji przepływów pracy
+- **Automatyzacja**: Integracja z AI dla automatyzacji przepływów pracy
 - **AI/ML**: Analiza tekstu, kategoryzacja e-maili, ocena zamożności klientów
 
 ## Technologie
@@ -18,7 +18,6 @@ Kompleksowy system CRM/ERP dla firm HVAC (ogrzewanie, wentylacja, klimatyzacja) 
 - **Frontend**: Streamlit
 - **Baza danych**: PostgreSQL / Supabase
 - **Wektorowa baza danych**: Qdrant
-- **Automatyzacja**: n8n
 - **AI/ML**: Local LLM (np. Local Llama)
 - **OCR**: Przetwarzanie dokumentów
 
@@ -53,10 +52,6 @@ Kompleksowy system CRM/ERP dla firm HVAC (ogrzewanie, wentylacja, klimatyzacja) 
    DB_USER=hvac_admin
    DB_PASSWORD=<twoje-hasło>
    DB_PORT=5432
-   
-   # n8n
-   N8N_URL=http://localhost:5678
-   N8N_API_KEY=<twój-klucz-api-n8n>
    ```
 
 4. Uruchom aplikację:

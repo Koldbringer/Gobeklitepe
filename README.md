@@ -25,7 +25,7 @@ A comprehensive CRM/ERP system for HVAC companies with features like OCR/DMS, in
 - **Frontend**: Streamlit
 - **Database**: PostgreSQL, Supabase
 - **Vector Database**: Qdrant
-- **Automation**: n8n
+- **Automation**: 
 - **AI Capabilities**: Local LLMs
 - **OCR/DMS**: Document processing and management
 
