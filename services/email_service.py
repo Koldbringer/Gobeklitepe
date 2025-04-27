@@ -41,8 +41,19 @@ EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True").lower() == "true"
 EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL", "False").lower() == "true"
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
+
+# IMAP configuration
 EMAIL_IMAP_SERVER = os.getenv("EMAIL_IMAP_SERVER", "")
 EMAIL_IMAP_PORT = int(os.getenv("EMAIL_IMAP_PORT", "993"))
+EMAIL_IMAP_USE_SSL = os.getenv("EMAIL_IMAP_USE_SSL", "True").lower() == "true"
+
+# POP3 configuration
+EMAIL_POP3_SERVER = os.getenv("EMAIL_POP3_SERVER", "")
+EMAIL_POP3_PORT = int(os.getenv("EMAIL_POP3_PORT", "995"))
+EMAIL_POP3_USE_SSL = os.getenv("EMAIL_POP3_USE_SSL", "True").lower() == "true"
+
+# Email retrieval method (IMAP or POP3)
+EMAIL_RETRIEVAL_METHOD = os.getenv("EMAIL_RETRIEVAL_METHOD", "IMAP").upper()
 
 # Email templates directory
 TEMPLATE_DIR = Path(__file__).parent.parent / "templates" / "email"
@@ -55,7 +66,7 @@ RETRY_DELAY = 300  # 5 minutes
 
 class EmailTemplate:
     """Class for managing email templates."""
-    
+
     @staticmethod
     def load_template(template_name: str) -> str:
         """Load an email template from the templates directory."""
@@ -63,27 +74,27 @@ class EmailTemplate:
         if not template_path.exists():
             logger.warning(f"Template {template_name} not found at {template_path}")
             return ""
-        
+
         with open(template_path, "r", encoding="utf-8") as f:
             return f.read()
-    
+
     @staticmethod
     def render_template(template_name: str, context: Dict[str, Any]) -> str:
         """Render an email template with the given context."""
         template = EmailTemplate.load_template(template_name)
         if not template:
             return ""
-        
+
         # Simple template rendering with string replacement
         for key, value in context.items():
             template = template.replace(f"{{{{{key}}}}}", str(value))
-        
+
         return template
 
 
 class EmailSender:
     """Class for sending emails."""
-    
+
     @staticmethod
     def create_message(
         subject: str,
@@ -98,36 +109,36 @@ class EmailSender:
     ) -> EmailMessage:
         """Create an email message."""
         msg = EmailMessage()
-        
+
         # Set basic headers
         msg["Subject"] = subject
         msg["From"] = from_email
-        
+
         # Handle different types of recipient lists
         if isinstance(to_emails, str):
             msg["To"] = to_emails
         else:
             msg["To"] = ", ".join(to_emails)
-        
+
         if cc_emails:
             if isinstance(cc_emails, str):
                 msg["Cc"] = cc_emails
             else:
                 msg["Cc"] = ", ".join(cc_emails)
-        
+
         if bcc_emails:
             if isinstance(bcc_emails, str):
                 msg["Bcc"] = bcc_emails
             else:
                 msg["Bcc"] = ", ".join(bcc_emails)
-        
+
         if reply_to:
             msg["Reply-To"] = reply_to
-        
+
         # Set date and message ID
         msg["Date"] = formatdate(localtime=True)
         msg["Message-ID"] = make_msgid(domain="hvacsolutions.com")
-        
+
         # Set content
         if html_content:
             msg.add_alternative(html_content, subtype="html")
@@ -135,7 +146,7 @@ class EmailSender:
                 msg.add_alternative(text_content, subtype="plain")
         elif text_content:
             msg.set_content(text_content)
-        
+
         # Add attachments
         if attachments:
             for attachment in attachments:
