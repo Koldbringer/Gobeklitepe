@@ -15,6 +15,8 @@ Features:
 import os
 import smtplib
 import imaplib
+import poplib
+import poplib
 import email
 import logging
 import time
@@ -153,12 +155,12 @@ class EmailSender:
                 filename = attachment.get("filename", "")
                 content = attachment.get("content", b"")
                 content_type = attachment.get("content_type", "application/octet-stream")
-                
+
                 maintype, subtype = content_type.split("/", 1)
                 msg.add_attachment(content, maintype=maintype, subtype=subtype, filename=filename)
-        
+
         return msg
-    
+
     @staticmethod
     def send_email(
         subject: str,
@@ -175,7 +177,7 @@ class EmailSender:
         """Send an email."""
         if not from_email:
             from_email = EMAIL_HOST_USER
-        
+
         try:
             # Create the email message
             msg = EmailSender.create_message(
